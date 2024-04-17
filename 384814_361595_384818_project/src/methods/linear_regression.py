@@ -14,7 +14,7 @@ class LinearRegression(object):
             and call set_arguments function of this class.
         """
         self.lmda = lmda
-        self.weights = None  # weights of the model for fitting
+        self.weights = None
 
     def fit(self, training_data, training_labels):
         """
@@ -26,20 +26,20 @@ class LinearRegression(object):
                 pred_labels (np.array): target of shape (N,regression_target_size)
         """
         N, D = training_data.shape
-        I = np.eye(D)  # Identity matrix of shape (D, D)
-        
-        # Regularization term, note that when lambda is 0, it becomes standard linear regression
-        regularization_term = self.lmda * I
-        
-        # Closed-form solution
-        XTX = training_data.T @ training_data + regularization_term
-        XTy = training_data.T @ training_labels
-        
-        # Computing weights
-        self.weights = np.linalg.inv(XTX) @ XTy
+        I = np.eye(D)  # Identity matrix
+        I[0, 0] = 0  # Do not regularize the bias term
 
-        return pred_labels
+        # Append a column of ones to include an intercept in the model
+        X_bias = np.hstack([np.ones((N, 1)), training_data])
 
+        # Closed-form solution for the weights
+        XTX = X_bias.T @ X_bias + self.lmda * I
+        XTy = X_bias.T @ training_labels
+        self.weights = np.linalg.solve(XTX, XTy)
+
+        # Predict on training data to provide immediate feedback on fit
+        return self.predict(training_data)
+   
 
 def predict(self, test_data):
         """
@@ -50,10 +50,10 @@ def predict(self, test_data):
             Returns:
                 test_labels (np.array): labels of shape (N,regression_target_size)
         """
-        ##
-        ###
-        #### YOUR CODE HERE!
-        ###
-        ##
 
-        return pred_regression_targets
+        N = test_data.shape[0]
+        # Include an intercept term
+        test_bias = np.hstack([np.ones((N, 1)), test_data])
+        pred_labels = test_bias @ self.weights  # Matrix multiplication for predictions
+
+        return pred_labels
