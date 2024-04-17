@@ -71,8 +71,6 @@ class LogisticRegression(object):
                 gradR += np.outer(error, x_vect)
             old_W_matrix = self.W_matrix
             self.W_matrix -= self.lr*gradR
-            if abs(np.linalg.norm(old_W_matrix-self.W_matrix)) < 0.001:
-                break
         
         pred_labels = []
         for x in self.biased_training_data:
