@@ -26,8 +26,10 @@ class LinearRegression(object):
                 pred_labels (np.array): target of shape (N,regression_target_size)
         """
         N, D = training_data.shape
-        I = np.eye(D)  # Identity matrix
-        I[0, 0] = 0  # Do not regularize the bias term
+        # Adjust identity matrix size to account for the bias term
+        I = np.eye(D + 1)
+        # The first element should not be regularized if it is the intercept term
+        I[0, 0] = 0
 
         # Append a column of ones to include an intercept in the model
         X_bias = np.hstack([np.ones((N, 1)), training_data])
@@ -39,9 +41,8 @@ class LinearRegression(object):
 
         # Predict on training data to provide immediate feedback on fit
         return self.predict(training_data)
-   
 
-def predict(self, test_data):
+    def predict(self, test_data):
         """
             Runs prediction on the test data.
             
