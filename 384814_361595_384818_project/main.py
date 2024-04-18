@@ -49,7 +49,18 @@ def main(args):
     
     ### WRITE YOUR CODE HERE to do any other data processing
 
+    # Compute mean and std on the training data
+    mean = xtrain.mean(axis=0, keepdims=True)
+    std = xtrain.std(axis=0, keepdims=True)
     
+    # Normalize the data
+    xtrain = normalize_fn(xtrain, mean, std)
+    xtest = normalize_fn(xtest, mean, std)
+
+    # Currently the bias is being appended in the methods themselves,
+    # so these lines are commented out.
+    # xtrain = append_bias_term(xtrain)
+    # xtest = append_bias_term(xtest)
 
     ## 3. Initialize the method you want to use.
 
@@ -61,8 +72,14 @@ def main(args):
     if args.method == "dummy_classifier":
         method_obj = DummyClassifier(arg1=1, arg2=2)
 
-    elif ...:  ### WRITE YOUR CODE HERE
-        pass
+    elif args.method == "knn":
+        method_obj = KNN(K=args.K)
+
+    elif args.method == "linear_regression":
+        method_obj = LinearRegression(lmda=args.lmda)
+    
+    elif args.method == "logistic_regression":
+        method_obj = LogisticRegression(lr=args.lr, max_iters=args.max_iters)
 
 
     ## 4. Train and evaluate the method
