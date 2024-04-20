@@ -76,9 +76,13 @@ def main(args):
         method_obj = KNN(k=args.K, task_kind=task_kind)
 
     elif args.method == "linear_regression":
+        if args.task == "breed_identifying":
+            raise Exception("Linear regression is not suitable for classification task.")
         method_obj = LinearRegression(lmda=args.lmda)
     
     elif args.method == "logistic_regression":
+        if args.task == "center_locating":
+            raise Exception("Logistic regression is not suitable for regression task.")
         method_obj = LogisticRegression(lr=args.lr, max_iters=args.max_iters)
 
 

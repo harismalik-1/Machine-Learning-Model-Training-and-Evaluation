@@ -22,18 +22,6 @@ class LogisticRegression(object):
         self.w = None
 
     def softmax(self, data, W):
-        """
-        Softmax function for multi-class logistic regression.
-
-        Args:
-            data (array): Input data of shape (N, D)
-            W (array): Weights of shape (D, C) where C is the number of classes
-        Returns:
-            array of shape (N, C): Probability array where each value is in the
-                range [0, 1] and each row sums to 1.
-                The row i corresponds to the prediction of the ith data sample, and 
-                the column j to the jth class. So element [i, j] is P(y_i=k | x_i, W)
-        """
         val = np.exp(data @ W)
         return val / np.sum(val, axis=1).reshape(-1, 1)
 
