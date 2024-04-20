@@ -17,7 +17,7 @@ class LinearRegression(object):
         self.w = None
 
     def compute_w(self, X_train,y_train):
-      w = np.matmul(np.linalg.pinv(X_train), y_train)
+      w = np.linalg.inv(X_train.T @ X_train + self.lmda * np.eye(X_train.shape[1])) @ X_train.T @ y_train
       return w
 
     def fit(self, training_data, training_labels):

@@ -17,8 +17,8 @@ class KNN(object):
     def euclidean_dist(self, example, training_examples):
       return np.sqrt(np.sum((example - training_examples)**2, axis=1))
 
-    def find_k_nearest_neighbors(self, k, distances):
-      indices = np.argsort(distances)[:k]
+    def find_nearest_neighbors(self, distances):
+      indices = np.argsort(distances)[:self.k]
       return indices
     
     def predict_label(self, neighbor_labels):
@@ -27,16 +27,16 @@ class KNN(object):
       else:
           return np.argmax(np.bincount(neighbor_labels))
 
-    def kNN_one(self, unlabeled_sample, training_features, training_labels, k):
+    def kNN_one(self, unlabeled_sample, training_features, training_labels):
       distances = self.euclidean_dist(unlabeled_sample, training_features)
-      nn_indices = self.find_k_nearest_neighbors(k, distances)
+      nn_indices = self.find_nearest_neighbors(distances)
       neighbor_labels = training_labels[nn_indices]
       return self.predict_label(neighbor_labels)
 
-    def kNN(self, unlabeled, training_features, training_labels, k):
+    def kNN(self, unlabeled, training_features, training_labels):
       return np.apply_along_axis(func1d=self.kNN_one, axis=1, arr=unlabeled, 
                                training_features=training_features, 
-                               training_labels=training_labels, k=k)
+                               training_labels=training_labels)
 
     def fit(self, training_data, training_labels):
         """
@@ -54,7 +54,7 @@ class KNN(object):
         """
         self.training_data = training_data
         self.training_labels = training_labels
-        pred_labels = self.kNN(training_data, training_data, training_labels, self.k)
+        pred_labels = self.kNN(training_data, training_data, training_labels)
         return pred_labels
 
     def predict(self, test_data):
@@ -66,5 +66,5 @@ class KNN(object):
             Returns:
                 test_labels (np.array): labels of shape (N,)
         """
-        test_labels = self.kNN(test_data, self.training_data, self.training_labels, self.k)
+        test_labels = self.kNN(test_data, self.training_data, self.training_labels)
         return test_labels
