@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..utils import get_n_classes, label_to_onehot, onehot_to_label
+from ..utils import get_n_classes, label_to_onehot, onehot_to_label, accuracy_fn
 
 
 class LogisticRegression(object):
@@ -19,24 +19,33 @@ class LogisticRegression(object):
         """
         self.lr = lr
         self.max_iters = max_iters
-        self.num_samples = None
-        self.x_num_coords = None
-        self.W_matrix = None
-        self.num_categs = None
+        self.w = None
 
-    def softmax_predictor_vect(self, x_vect):
-        # evaluated by the softmax formula
-        # return a vector y-hat and the index(category)
-        y_pred_vect = []
-        list_of_numerators = np.exp(np.dot(self.W_matrix, x_vect))
-        denom = np.sum(list_of_numerators)
-        y_pred_vect = list_of_numerators * denom
-        
-        # assigning an actual category
-        category_int = np.argmax(np.array(y_pred_vect))
-        y_pred_vect_result = np.zeros(self.num_categs)
-        y_pred_vect_result[category_int] = 1
-        return y_pred_vect_result, category_int
+    def softmax(self, data, W):
+        """
+        Softmax function for multi-class logistic regression.
+
+        Args:
+            data (array): Input data of shape (N, D)
+            W (array): Weights of shape (D, C) where C is the number of classes
+        Returns:
+            array of shape (N, C): Probability array where each value is in the
+                range [0, 1] and each row sums to 1.
+                The row i corresponds to the prediction of the ith data sample, and 
+                the column j to the jth class. So element [i, j] is P(y_i=k | x_i, W)
+        """
+        val = np.exp(data @ W)
+        return val / np.sum(val, axis=1).reshape(-1, 1)
+
+    def loss_logistic_multi(self, data, labels, w):
+        softmax = self.softmax(data, w)
+        return - np.sum(labels * np.log(softmax))
+
+    def gradient_logistic_multi(self, data, labels, W):
+        return data.T @ (self.softmax(data, W) - labels)
+
+    def logistic_regression_predict_multi(self, data, W):
+        return np.argmax(self.softmax(data, W), axis=1)
 
     def fit(self, training_data, training_labels):
         """
@@ -48,36 +57,21 @@ class LogisticRegression(object):
         Returns:
             pred_labels (array): target of shape (N,)
         """
-        self.num_samples = len(training_data)   # N
-        self.x_num_coords = len(training_data[0])   # D
-        self.num_categs = max(training_labels)+1  # C
-        self.W_matrix = np.random.rand(self.num_categs, self.x_num_coords+1)
+        labels_onehot = label_to_onehot(training_labels)
+        D = training_data.shape[1]  # number of features
+        C = labels_onehot.shape[1]  # number of classes
+        # Random initialization of the weights
+        weights = np.random.normal(0, 0.1, (D, C))
+        for it in range(self.max_iters):
+            gradient = self.gradient_logistic_multi(training_data, labels_onehot, weights)
+            weights = weights - self.lr * gradient
 
-        # add a column of 1s
-        new_col = np.ones((self.num_samples, 1))
-        self.biased_training_data = np.concatenate((new_col, training_data), axis=1)
-
-
-        # gradient descent
-        for _ in range(self.max_iters):
-            gradR = np.zeros((self.num_categs, self.x_num_coords+1))
-            for i in range(self.num_samples):
-                # create the actual y vector and get x vector
-                y_vect = np.zeros(self.num_categs)
-                y_vect[training_labels[i]] = 1
-                x_vect = np.array(self.biased_training_data[i])
-                #geberate the gradient matrix
-                error = np.array(self.softmax_predictor_vect(self.biased_training_data[i])[0] - y_vect)
-                gradR += np.outer(error, x_vect)
-            old_W_matrix = self.W_matrix
-            self.W_matrix -= self.lr*gradR
+            predictions = self.logistic_regression_predict_multi(training_data, weights)
+            if accuracy_fn(predictions, onehot_to_label(labels_onehot)) == 100:
+                break
+        self.w = weights
+        return onehot_to_label(self.softmax(training_data, weights))
         
-        pred_labels = []
-        for x in self.biased_training_data:
-            pred_labels.append(self.softmax_predictor_vect(x)[1])
-
-        return np.array(pred_labels)
-
     def predict(self, test_data):
         """
         Runs prediction on the test data.
@@ -87,17 +81,4 @@ class LogisticRegression(object):
         Returns:
             pred_labels (array): labels of shape (N,)
         """
-        ##
-        ###
-        #### WRITE YOUR CODE HERE!
-        ###
-        ##
-        pred_labels = []
-        # add a column of 1s
-        new_col = np.ones((len(test_data), 1))
-        biased_test_data = np.concatenate((new_col, test_data), axis=1)
-
-        for x in biased_test_data:
-            pred_labels.append(self.softmax_predictor_vect(x)[1])
-
-        return np.array(pred_labels)
+        return onehot_to_label(self.softmax(test_data, self.w))

@@ -14,7 +14,11 @@ class LinearRegression(object):
             and call set_arguments function of this class.
         """
         self.lmda = lmda
-        self.weights = None
+        self.w = None
+
+    def compute_w(self, X_train,y_train):
+      w = np.matmul(np.linalg.pinv(X_train), y_train)
+      return w
 
     def fit(self, training_data, training_labels):
         """
@@ -25,22 +29,10 @@ class LinearRegression(object):
             Returns:
                 pred_labels (np.array): target of shape (N,regression_target_size)
         """
-        N, D = training_data.shape
-        # Adjust identity matrix size to account for the bias term
-        I = np.eye(D + 1)
-        # The first element should not be regularized if it is the intercept term
-        I[0, 0] = 0
 
-        # Append a column of ones to include an intercept in the model
-        X_bias = np.hstack([np.ones((N, 1)), training_data])
+        self.w = self.compute_w(training_data, training_labels)
+        return training_data @ self.w
 
-        # Closed-form solution for the weights
-        XTX = X_bias.T @ X_bias + self.lmda * I
-        XTy = X_bias.T @ training_labels
-        self.weights = np.linalg.solve(XTX, XTy)
-
-        # Predict on training data to provide immediate feedback on fit
-        return self.predict(training_data)
 
     def predict(self, test_data):
         """
@@ -51,10 +43,4 @@ class LinearRegression(object):
             Returns:
                 test_labels (np.array): labels of shape (N,regression_target_size)
         """
-
-        N = test_data.shape[0]
-        # Include an intercept term
-        test_bias = np.hstack([np.ones((N, 1)), test_data])
-        pred_labels = test_bias @ self.weights  # Matrix multiplication for predictions
-
-        return pred_labels
+        return test_data @ self.w

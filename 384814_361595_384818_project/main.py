@@ -57,10 +57,9 @@ def main(args):
     xtrain = normalize_fn(xtrain, mean, std)
     xtest = normalize_fn(xtest, mean, std)
 
-    # Currently the bias is being appended in the methods themselves,
-    # so these lines are commented out.
-    # xtrain = append_bias_term(xtrain)
-    # xtest = append_bias_term(xtest)
+    # Add bias term
+    xtrain = append_bias_term(xtrain)
+    xtest = append_bias_term(xtest)
 
     ## 3. Initialize the method you want to use.
 
@@ -73,7 +72,8 @@ def main(args):
         method_obj = DummyClassifier(arg1=1, arg2=2)
 
     elif args.method == "knn":
-        method_obj = KNN(K=args.K)
+        task_kind = "classification" if args.task == "breed_identifying" else "regression"
+        method_obj = KNN(k=args.K, task_kind=task_kind)
 
     elif args.method == "linear_regression":
         method_obj = LinearRegression(lmda=args.lmda)
@@ -87,7 +87,6 @@ def main(args):
     if args.task == "center_locating":
         # Fit parameters on training data
         preds_train = method_obj.fit(xtrain, ctrain)
-
         # Perform inference for training and test data
         train_pred = method_obj.predict(xtrain)
         preds = method_obj.predict(xtest)

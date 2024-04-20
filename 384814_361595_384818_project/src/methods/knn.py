@@ -14,6 +14,30 @@ class KNN(object):
         self.training_data = None
         self.training_labels = None
 
+    def euclidean_dist(self, example, training_examples):
+      return np.sqrt(np.sum((example - training_examples)**2, axis=1))
+
+    def find_k_nearest_neighbors(self, k, distances):
+      indices = np.argsort(distances)[:k]
+      return indices
+    
+    def predict_label(self, neighbor_labels):
+      if self.task_kind == "regression":
+          return np.mean(neighbor_labels, axis=0)
+      else:
+          return np.argmax(np.bincount(neighbor_labels))
+
+    def kNN_one(self, unlabeled_sample, training_features, training_labels, k):
+      distances = self.euclidean_dist(unlabeled_sample, training_features)
+      nn_indices = self.find_k_nearest_neighbors(k, distances)
+      neighbor_labels = training_labels[nn_indices]
+      return self.predict_label(neighbor_labels)
+
+    def kNN(self, unlabeled, training_features, training_labels, k):
+      return np.apply_along_axis(func1d=self.kNN_one, axis=1, arr=unlabeled, 
+                               training_features=training_features, 
+                               training_labels=training_labels, k=k)
+
     def fit(self, training_data, training_labels):
         """
             Trains the model, returns predicted labels for training data.
@@ -28,10 +52,9 @@ class KNN(object):
             Returns:
                 pred_labels (np.array): labels of shape (N,)
         """
-
         self.training_data = training_data
         self.training_labels = training_labels
-        pred_labels = self.predict(training_data)
+        pred_labels = self.kNN(training_data, training_data, training_labels, self.k)
         return pred_labels
 
     def predict(self, test_data):
@@ -43,38 +66,5 @@ class KNN(object):
             Returns:
                 test_labels (np.array): labels of shape (N,)
         """
-
-        #helper functio to 
-        def create_label_to_list(label_to_list, nearest_neighbors, distances,label):
-            for idx in nearest_neighbors:
-                if self.training_labels[idx] == label:
-                    if self.training_labels[idx] not in label_to_list:
-                        label_to_list[self.training_labels[idx]] = np.mean(np.array([distances[idx]]))
-                    else:
-                        label_to_list[self.training_labels[idx]] = np.mean(np.append(label_to_list[self.training_labels[idx]], distances[idx]))
-            return label_to_list
-
-        # model starts here
-        predictions = []
-        for sample in test_data:
-            distances = [np.sqrt(np.sum((sample - x)**2)) for x in self.training_data]
-            nearest_neighbors = np.argsort(distances)[:self.k]
-            nearest_labels = [self.training_labels[i] for i in nearest_neighbors]
-
-            label_to_list ={}
-            label_count = {}
-            for label in set(self.training_labels):
-                label_to_list = create_label_to_list(label_to_list, nearest_neighbors, distances, label)
-                label_count[label] = nearest_labels.count(label)
-
-            if len(label_count.values()) != len(set(self.training_labels)):
-                predicted_label = max(set(nearest_labels), key=nearest_labels.count)
-            else:
-                predicted_label = list(label_to_list.keys())[0]
-                for label in label_to_list:
-                    if label_count[label] == max(label_count.values()) and label_to_list[label] <= label_to_list[predicted_label]:
-                        predicted_label = label
-
-            predictions.append(predicted_label)
-        return np.array(predictions)
-
+        test_labels = self.kNN(test_data, self.training_data, self.training_labels, self.k)
+        return test_labels
