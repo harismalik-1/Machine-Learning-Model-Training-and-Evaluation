@@ -23,7 +23,8 @@ class LogisticRegression(object):
 
     def softmax(self, data, W):
         val = np.exp(data @ W)
-        return val / np.sum(val, axis=1).reshape(-1, 1)
+        s = np.sum(val, axis=1)
+        return (val.T / s).T
 
     def loss_logistic_multi(self, data, labels, w):
         softmax = self.softmax(data, w)
@@ -53,10 +54,6 @@ class LogisticRegression(object):
         for it in range(self.max_iters):
             gradient = self.gradient_logistic_multi(training_data, labels_onehot, weights)
             weights = weights - self.lr * gradient
-
-            predictions = self.logistic_regression_predict_multi(training_data, weights)
-            if accuracy_fn(predictions, onehot_to_label(labels_onehot)) == 100:
-                break
         self.w = weights
         return onehot_to_label(self.softmax(training_data, weights))
         

@@ -49,17 +49,18 @@ def main(args):
     
     ### WRITE YOUR CODE HERE to do any other data processing
 
+    # Add bias term
+    xtrain = append_bias_term(xtrain)
+    xtest = append_bias_term(xtest)
+
     # Compute mean and std on the training data
-    mean = xtrain.mean(axis=0, keepdims=True)
-    std = xtrain.std(axis=0, keepdims=True)
+    mean = np.mean(xtrain)
+    std = np.std(xtrain)
     
     # Normalize the data
     xtrain = normalize_fn(xtrain, mean, std)
     xtest = normalize_fn(xtest, mean, std)
 
-    # Add bias term
-    xtrain = append_bias_term(xtrain)
-    xtest = append_bias_term(xtest)
 
     ## 3. Initialize the method you want to use.
 
@@ -84,7 +85,8 @@ def main(args):
         if args.task == "center_locating":
             raise Exception("Logistic regression is not suitable for regression task.")
         method_obj = LogisticRegression(lr=args.lr, max_iters=args.max_iters)
-
+    else:
+        raise Exception("Invalid choice of method! Only support dummy_classifier / knn / linear_regression/ logistic_regression / nn (MS2)")
 
     ## 4. Train and evaluate the method
 
@@ -100,7 +102,7 @@ def main(args):
         loss = mse_fn(preds, ctest)
 
         print(f"\nTrain loss = {train_loss:.3f}% - Test loss = {loss:.3f}")
-
+        return train_loss, loss
     elif args.task == "breed_identifying":
 
         # Fit (:=train) the method on the training data for classification task
@@ -117,6 +119,7 @@ def main(args):
         acc = accuracy_fn(preds, ytest)
         macrof1 = macrof1_fn(preds, ytest)
         print(f"Test set:  accuracy = {acc:.3f}% - F1-score = {macrof1:.6f}")
+        return acc, macrof1
     else:
         raise Exception("Invalid choice of task! Only support center_locating and breed_identifying!")
 
