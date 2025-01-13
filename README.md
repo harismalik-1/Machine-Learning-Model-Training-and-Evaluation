@@ -1,107 +1,90 @@
+# Classical Machine Learning Pipeline (KNN, Logistic/Linear Regression)
 
-# Machine Learning Model Training and Evaluation
+This project demonstrates a traditional machine learning approach for both **classification** and **regression** tasks. Specifically, it explores:
+- **Breed Identification (Classification)**: Uses Logistic Regression or KNN to predict categories.
+- **Center Locating (Regression)**: Uses Linear Regression or KNN to predict numeric coordinates.
 
-This project demonstrates the training and evaluation of various machine learning models using Python. The script can handle both classification and regression tasks using different methods. The dataset can be in the form of extracted features or original images.
+It includes **hyperparameter tuning** (e.g., varying \( k \), regularization lambda, or learning rate) and **performance metrics** (accuracy, macro-F1, MSE). By adjusting these parameters, the pipeline helps highlight how different algorithms and configurations can affect results.
+
+---
 
 ## Table of Contents
+- [Key Features](#key-features)
+- [File Overview](#file-overview)
+- [How to Run](#how-to-run)
+  - [Command-Line Arguments](#command-line-arguments)
+  - [Examples](#examples)
+- [Project Structure](#project-structure)
+- [Dependencies](#dependencies)
+- [License](#license)
 
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Methods](#methods)
-- [Tasks](#tasks)
-- [Data Preparation](#data-preparation)
-- [Training and Evaluation](#training-and-evaluation)
-- [Arguments](#arguments)
+---
 
-## Requirements
+## Key Features
 
-- Python 3.x
-- NumPy
-- argparse
+1. **Flexible Task Selection**  
+   - **`center_locating`** for regression tasks (e.g., coordinate predictions).  
+   - **`breed_identifying`** for classification tasks (e.g., identifying dog breeds).
 
-## Installation
+2. **Multiple Methods**  
+   - **DummyClassifier** (baseline)  
+   - **KNN** (supports both classification & regression modes)  
+   - **Logistic Regression** (classification only)  
+   - **Linear Regression** (regression only)
 
-Clone this repository and navigate to the project directory:
+3. **Hyperparameter Tuning & Visualization**  
+   - Several scripts demonstrate how to iterate over different hyperparameters (like \( k \) in KNN or \(\lambda\) in Linear Regression) and measure performance (accuracy, macro-F1 for classification or MSE for regression).  
+   - 3D visualization of results (e.g., learning rate vs. iterations vs. F1-score).
 
-```bash
-git clone https://github.com/yourusername/ml-model-training.git
-cd ml-model-training
-```
+4. **Data Preprocessing**  
+   - Loading and splitting data into training, test (and optional validation).  
+   - Appending a bias term, normalizing features using training set mean & std.  
+   - Handling different data types (e.g., extracted features vs. original images).
 
-Install the required packages:
+---
 
-```bash
-pip install -r requirements.txt
-```
+## File Overview
 
-## Usage
+1. **`main.py`**  
+   - The entry point for training and testing various ML methods.  
+   - Parses command-line arguments, loads data, performs normalization, appends bias terms, initializes the chosen method, and runs evaluation.
 
-Run the script with the following command:
+2. **`testKNNClassification()`**  
+   - Iterates over different values of \( k \) for classification tasks (breed_identifying).  
+   - Tracks accuracy & macro-F1 to identify the best \( k \).
 
-```bash
-python main.py --task <task> --method <method> --data_path <data_path> --data_type <data_type> [additional arguments]
-```
+3. **`testKNNRegression()`**  
+   - Iterates over different values of \( k \) for regression tasks (center_locating).  
+   - Tracks MSE to identify the best \( k \).
 
-Example:
+4. **`testLogisticRegression()`**  
+   - Explores different learning rates and max iterations for logistic regression.  
+   - Uses 3D plotting to visualize macro-F1 across the hyperparameter search space.
 
-```bash
-python main.py --task breed_identifying --method logistic_regression --data_path data --data_type features
-```
+5. **`testLinearRegression()`**  
+   - Iterates over different \(\lambda\) values for ridge regression.  
+   - Monitors train/test MSE to find the optimal regularization strength.
 
-## Methods
+---
 
-The following methods are available:
+## How to Run
 
-- `dummy_classifier`: A simple classifier for testing purposes.
-- `knn`: K-Nearest Neighbors for both classification and regression tasks.
-- `linear_regression`: Linear regression for regression tasks.
-- `logistic_regression`: Logistic regression for classification tasks.
-- `nn`: Neural Networks (to be implemented in MS2).
+### Command-Line Arguments
 
-## Tasks
+Below are some key flags and their defaults. Run `python main.py --help` for the complete list.
 
-The script can handle the following tasks:
+- **`--task`**: `center_locating` (regression) or `breed_identifying` (classification).  
+- **`--method`**: Choose among `dummy_classifier`, `knn`, `linear_regression`, `logistic_regression` (or `nn` for a placeholder).  
+- **`--data_path`**: Path to your dataset (default: `"data"`).  
+- **`--data_type`**: Either `"features"` or `"original"`. If you have a custom feature dataset, place it as `features.npz`.  
+- **`--lmda`**: Lambda regularization term for linear regression (default: `10`).  
+- **`--K`**: Number of neighbors (KNN).  
+- **`--lr`**: Learning rate for methods that use gradient descent (e.g., logistic regression).  
+- **`--max_iters`**: Maximum training iterations (for iterative methods).  
+- **`--test`**: If included, the script trains on the full dataset and evaluates on the test set (no validation split).
 
-- `center_locating`: A regression task.
-- `breed_identifying`: A classification task.
+### Examples
 
-## Data Preparation
-
-Data can be in two forms:
-
-1. Extracted features dataset (`features`)
-2. Original image dataset (`original`)
-
-Depending on the data type, the script will load and preprocess the data accordingly. You can further process the data by creating a validation set, normalizing, or adding a bias term.
-
-## Training and Evaluation
-
-The script trains the specified model on the training data and evaluates it on the test data. The evaluation metrics are:
-
-- For regression tasks: Mean Squared Error (MSE)
-- For classification tasks: Accuracy and Macro F1-score
-
-## Arguments
-
-- `--task`: The task to perform (`center_locating` or `breed_identifying`).
-- `--method`: The method to use (`dummy_classifier`, `knn`, `linear_regression`, `logistic_regression`, `nn`).
-- `--data_path`: Path to your dataset.
-- `--data_type`: Type of data (`features` or `original`).
-- `--lmda`: Lambda value for linear/ridge regression.
-- `--K`: Number of neighboring data points used for KNN.
-- `--lr`: Learning rate for methods with learning rate.
-- `--max_iters`: Maximum iterations for iterative methods.
-- `--test`: Use the test set for evaluation.
-- `--nn_type`: Type of neural network to use (for MS2).
-- `--nn_batch_size`: Batch size for neural network training (for MS2).
-
-Feel free to add more arguments if needed!
-
-## Contributing
-
-If you want to contribute to this project, feel free to submit a pull request or open an issue.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+1. **Run KNN for Classification**  
+   ```bash
+   python main.py --task breed_identifying --method knn --K 5 --data_type features
